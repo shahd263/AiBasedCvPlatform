@@ -1,4 +1,4 @@
-"""Authentication service: register, login, get current user"""
+"""Authentication service: register, login, get current user (async)."""
 from Application.DTOs.AuthResultDTO import AuthResult
 from Application.DTOs.UpdateUserDTO import UpdateUserDTO
 from Core.security import create_access_token, decode_token, hash_password, verify_password
@@ -10,17 +10,18 @@ class EmailAlreadyRegisteredError(Exception):
 
     pass
 
+
 class AuthenticationService:
     """Handles user registration, login, current user, and logout."""
 
     def __init__(self, user_repository: UserRepositoryInterface) -> None:
         self._user_repository = user_repository
 
-    def register(self, full_name: str, email: str, password: str) -> AuthResult:
+    async def register(self, full_name: str, email: str, password: str) -> AuthResult:
         """Register a new user: hash password, save, return JWT."""
-        if self._email_exists(self._user_repository, email):
+        if await self._email_exists(email):
             raise EmailAlreadyRegisteredError(f"Email already registered: {email}")
-        user = self._user_repository.create_user(
+        user = await self._user_repository.create_user(
             full_name=full_name,
             email=email,
             password_hash=hash_password(password),
@@ -28,15 +29,15 @@ class AuthenticationService:
         token = create_access_token(user_id=user.id, email=user.email)
         return AuthResult(id=user.id, full_name=user.full_name, email=user.email, token=token)
 
-    def login(self, email: str, password: str) -> AuthResult | None:
+    async def login(self, email: str, password: str) -> AuthResult | None:
         """Validate email/password and return JWT or None."""
-        user = self._user_repository.get_by_email(email)
+        user = await self._user_repository.get_by_email(email)
         if not user or not verify_password(password, user.password):
             return None
         token = create_access_token(user_id=user.id, email=user.email)
         return AuthResult(id=user.id, full_name=user.full_name, email=user.email, token=token)
 
-    def get_current_user(self, token: str) -> AuthResult | None:
+    async def get_current_user(self, token: str) -> AuthResult | None:
         """Decode JWT and return user info or None."""
         payload = decode_token(token)
         if not payload:
@@ -49,34 +50,28 @@ class AuthenticationService:
             user_id = int(user_id_str)
         except ValueError:
             return None
-        user = self._user_repository.get_by_id(user_id)
+        user = await self._user_repository.get_by_id(user_id)
         if not user:
             return None
         return AuthResult(id=user.id, full_name=user.full_name, email=user.email, token=token)
 
-
-
-    def update_profile(self, request: UpdateUserDTO,) -> AuthResult | None:
-        """Update current user profile. Only provided fields are updated. Returns new AuthResult or None."""
+    async def update_profile(self, request: UpdateUserDTO) -> AuthResult | None:
+        """Update current user profile. Returns new AuthResult or None."""
         email_normalized = request.email.strip().lower()
-        existing = self._user_repository.get_by_email(email_normalized)
+        existing = await self._user_repository.get_by_email(email_normalized)
         if existing and existing.id != request.id:
             raise EmailAlreadyRegisteredError(f"Email already registered: {request.email}")
-        request.password = (
-            hash_password(request.password) if (request.password is not None and request.password.strip()) else None
-        )
-        user = self._user_repository.update_user(request)
+        if request.password is not None and request.password.strip():
+            request.password = hash_password(request.password)
+        else:
+            request.password = None
+        user = await self._user_repository.update_user(request)
         if not user:
             return None
         token = create_access_token(user_id=user.id, email=user.email)
         return AuthResult(id=user.id, full_name=user.full_name, email=user.email, token=token)
 
-
-    @staticmethod
-    def _email_exists(user_repository, email: str) -> bool:
-
+    async def _email_exists(self, email: str) -> bool:
         email_normalized = email.strip().lower()
-        existing = user_repository.get_by_email(email_normalized)
-        if existing:
-           return True
-        return False
+        existing = await self._user_repository.get_by_email(email_normalized)
+        return existing is not None

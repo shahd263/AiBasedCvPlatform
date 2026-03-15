@@ -3,23 +3,24 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Application.DTOs.AuthResultDTO import AuthResult
 from Application.Services.AuthenticationService import AuthenticationService
+from Application.Services.GenerateCvService import GenerateCvService
+from Application.Services.ResumeService import ResumeService
+from Application.Services.UploadCVService import UploadCVService
 from Domain.repositories.resume_repository import ResumeRepositoryInterface
 from Domain.repositories.user_repository import UserRepositoryInterface
 from Infrastructure.Database.database import get_db
 from Infrastructure.Repositories.resume_repository_impl import ResumeRepository
 from Infrastructure.Repositories.user_repository_impl import UserRepository
-from Application.Services.UploadCVService import UploadCVService
-from Application.Services.ResumeService import ResumeService
 
 security_scheme = HTTPBearer(auto_error=False)
 
 
 def get_user_repository(
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> UserRepositoryInterface:
     """Provide UserRepository implementation."""
     return UserRepository(db)
@@ -33,7 +34,7 @@ def get_authentication_service(
 
 
 def get_resume_repository(
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> ResumeRepositoryInterface:
     """Provide ResumeRepository implementation."""
     return ResumeRepository(db)
@@ -53,7 +54,7 @@ def get_resume_service(
     return ResumeService(repo)
 
 
-def get_current_user(
+async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security_scheme)],
     auth_service: Annotated[AuthenticationService, Depends(get_authentication_service)],
 ) -> AuthResult:
@@ -64,7 +65,7 @@ def get_current_user(
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    result = auth_service.get_current_user(token=credentials.credentials)
+    result = await auth_service.get_current_user(token=credentials.credentials)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,3 +73,6 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return result
+
+def get_generate_cv_service() -> GenerateCvService:
+    return GenerateCvService()

@@ -8,7 +8,7 @@ class ResumeRepositoryInterface(ABC):
     """Abstract resume repository."""
 
     @abstractmethod
-    def create_resume(
+    async def create_resume(
         self,
         user_id: int,
         file_path: str,
@@ -19,23 +19,23 @@ class ResumeRepositoryInterface(ABC):
         ...
 
     @abstractmethod
-    def get_by_id(self, resume_id: int) -> Resume | None:
+    async def get_by_id(self, resume_id: int) -> Resume | None:
         """Get resume by id if exists."""
         ...
 
     @abstractmethod
-    def get_resumes_by_user(self, user_id: int) -> list[Resume]:
+    async def get_resumes_by_user(self, user_id: int) -> list[Resume]:
         """Get all resumes for a user."""
         ...
 
     @abstractmethod
-    def delete_resume(self, resume_id: int) -> bool:
+    async def delete_resume(self, resume_id: int) -> bool:
         """Delete resume by id. Returns True if deleted, False if not found."""
         ...
 
     @abstractmethod
-    def update_file_name(
+    async def update_file_name(
         self, resume_id: int, new_file_name: str
     ) -> Resume | None:
-        """Update file_name, file_path and updated_at. Returns updated Resume or None if not found."""
+        """Update file_name and updated_at. Returns updated Resume or None if not found."""
         ...

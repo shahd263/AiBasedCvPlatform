@@ -25,13 +25,13 @@ CurrentUser = Annotated[AuthResult, Depends(get_current_user)]
 
 
 @router.post("/register", response_model=UserResponse)
-def register(
+async def register(
     body: RegisterRequest,
     auth_service: AuthServiceDep,
 ) -> UserResponse:
     """Register a new user. Returns user info and JWT."""
     try:
-        result = auth_service.register(
+        result = await auth_service.register(
             full_name=body.full_name, email=body.email, password=body.password
         )
     except EmailAlreadyRegisteredError:
@@ -43,12 +43,12 @@ def register(
 
 
 @router.post("/login", response_model=UserResponse)
-def login(
+async def login(
     body: LoginRequest,
     auth_service: AuthServiceDep,
 ) -> UserResponse:
     """Login with email/password. Returns user info and JWT."""
-    result = auth_service.login(email=body.email, password=body.password)
+    result = await auth_service.login(email=body.email, password=body.password)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -58,7 +58,7 @@ def login(
 
 
 @router.get("/me", response_model=UserResponse)
-def me(
+async def me(
     current_user: CurrentUser,
 ) -> UserResponse:
     """Return current authenticated user (from JWT)."""
@@ -70,7 +70,7 @@ def me(
 
 
 @router.patch("/me", response_model=UserResponse)
-def update_profile(
+async def update_profile(
     body: UpdateProfileRequest,
     current_user: CurrentUser,
     auth_service: AuthServiceDep,
@@ -83,7 +83,7 @@ def update_profile(
             email=body.email,
             password=body.password,
         )
-        result = auth_service.update_profile(request)
+        result = await auth_service.update_profile(request)
     except EmailAlreadyRegisteredError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

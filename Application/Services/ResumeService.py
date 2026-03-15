@@ -1,4 +1,5 @@
-"""Resume CRUD service: get by id, list by user, add, delete, update file name."""
+"""Resume CRUD service (async): get by id, list by user, add, delete, update file name."""
+import asyncio
 from pathlib import Path
 
 from Domain.repositories.resume_repository import ResumeRepositoryInterface
@@ -19,18 +20,18 @@ class ResumeService:
     def __init__(self, resume_repository: ResumeRepositoryInterface) -> None:
         self._repo = resume_repository
 
-    def get_resume_by_id(self, resume_id: int) -> Resume:
+    async def get_resume_by_id(self, resume_id: int) -> Resume:
         """Return resume by id. Raises ResumeNotFoundError if not found."""
-        resume = self._repo.get_by_id(resume_id)
+        resume = await self._repo.get_by_id(resume_id)
         if not resume:
             raise ResumeNotFoundError(resume_id)
         return resume
 
-    def get_user_resumes(self, user_id: int) -> list[Resume]:
+    async def get_user_resumes(self, user_id: int) -> list[Resume]:
         """Return all resumes that belong to the user."""
-        return self._repo.get_resumes_by_user(user_id)
+        return await self._repo.get_resumes_by_user(user_id)
 
-    def add_cv(
+    async def add_cv(
         self,
         user_id: int,
         file_path: str,
@@ -39,36 +40,35 @@ class ResumeService:
     ) -> Resume:
         """Create a new resume and store it. file_name (no extension) defaults to stem of file_path."""
         name = file_name or Path(file_path).stem
-        return self._repo.create_resume(
+        return await self._repo.create_resume(
             user_id=user_id,
             file_path=file_path,
             file_name=name,
             extracted_text=extracted_text,
         )
 
-    def delete_cv(self, resume_id: int) -> None:
+    async def delete_cv(self, resume_id: int) -> None:
         """Delete the resume and the local file. Raises ResumeNotFoundError if not found."""
-        resume = self._repo.get_by_id(resume_id)
+        resume = await self._repo.get_by_id(resume_id)
         if not resume:
             raise ResumeNotFoundError(resume_id)
         file_path = Path(resume.file_path)
         if file_path.exists():
             try:
-                file_path.unlink(missing_ok=True)
+                await asyncio.to_thread(file_path.unlink, True)  # missing_ok=True
             except OSError:
                 pass
-        deleted = self._repo.delete_resume(resume_id)
+        deleted = await self._repo.delete_resume(resume_id)
         if not deleted:
             raise ResumeNotFoundError(resume_id)
 
-    def update_file_name(self, resume_id: int, new_file_name: str) -> Resume:
-        """Update file name (no extension) and rename file on disk keeping extension. Raises ResumeNotFoundError if not found."""
-        resume = self._repo.get_by_id(resume_id)
+    async def update_file_name(self, resume_id: int, new_file_name: str) -> Resume:
+        """Update file name (no extension). Raises ResumeNotFoundError if not found."""
+        resume = await self._repo.get_by_id(resume_id)
         if not resume:
             raise ResumeNotFoundError(resume_id)
-        # new_file_name is without extension; 
         new_file_name_stripped = Path(new_file_name).stem
-        updated = self._repo.update_file_name(resume_id, new_file_name_stripped)
+        updated = await self._repo.update_file_name(resume_id, new_file_name_stripped)
         if not updated:
             raise ResumeNotFoundError(resume_id)
         return updated

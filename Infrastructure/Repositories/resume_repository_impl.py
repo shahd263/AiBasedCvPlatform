@@ -1,8 +1,9 @@
-"""Resume repository implementation using SQLAlchemy."""
+"""Resume repository implementation using SQLAlchemy (async)."""
 from datetime import datetime
 from pathlib import Path
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Domain.repositories.resume_repository import ResumeRepositoryInterface
 from Entites.Resume import Resume
@@ -10,9 +11,9 @@ from Infrastructure.Database.models.resume_model import ResumeModel
 
 
 class ResumeRepository(ResumeRepositoryInterface):
-    """SQLAlchemy implementation of ResumeRepository."""
+    """SQLAlchemy async implementation of ResumeRepository."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
     def _to_domain(self, model: ResumeModel) -> Resume:
@@ -27,7 +28,7 @@ class ResumeRepository(ResumeRepositoryInterface):
             updated_at=model.updated_at,
         )
 
-    def create_resume(
+    async def create_resume(
         self,
         user_id: int,
         file_path: str,
@@ -41,33 +42,40 @@ class ResumeRepository(ResumeRepositoryInterface):
             extracted_text=extracted_text,
         )
         self._db.add(model)
-        self._db.commit()
-        self._db.refresh(model)
+        await self._db.commit()
+        await self._db.refresh(model)
         return self._to_domain(model)
 
-    def get_by_id(self, resume_id: int) -> Resume | None:
-        model = self._db.query(ResumeModel).filter(ResumeModel.id == resume_id).first()
+    async def get_by_id(self, resume_id: int) -> Resume | None:
+        result = await self._db.execute(select(ResumeModel).where(ResumeModel.id == resume_id))
+        model = result.scalar_one_or_none()
         return self._to_domain(model) if model else None
 
-    def get_resumes_by_user(self, user_id: int) -> list[Resume]:
-        models = self._db.query(ResumeModel).filter(ResumeModel.user_id == user_id).all()
+    async def get_resumes_by_user(self, user_id: int) -> list[Resume]:
+        result = await self._db.execute(
+            select(ResumeModel).where(ResumeModel.user_id == user_id)
+        )
+        models = result.scalars().all()
         return [self._to_domain(m) for m in models]
 
-    def delete_resume(self, resume_id: int) -> bool:
-        model = self._db.query(ResumeModel).filter(ResumeModel.id == resume_id).first()
+    async def delete_resume(self, resume_id: int) -> bool:
+        result = await self._db.execute(select(ResumeModel).where(ResumeModel.id == resume_id))
+        model = result.scalar_one_or_none()
         if not model:
             return False
-        self._db.delete(model)
-        self._db.commit()
+        await self._db.delete(model)
+        await self._db.commit()
         return True
 
-    def update_file_name(
-        self, resume_id: int, new_file_name: str) -> Resume | None:
-        model = self._db.query(ResumeModel).filter(ResumeModel.id == resume_id).first()
+    async def update_file_name(
+        self, resume_id: int, new_file_name: str
+    ) -> Resume | None:
+        result = await self._db.execute(select(ResumeModel).where(ResumeModel.id == resume_id))
+        model = result.scalar_one_or_none()
         if not model:
             return None
         model.file_name = new_file_name
         model.updated_at = datetime.utcnow()
-        self._db.commit()
-        self._db.refresh(model)
+        await self._db.commit()
+        await self._db.refresh(model)
         return self._to_domain(model)

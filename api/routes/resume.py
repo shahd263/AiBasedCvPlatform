@@ -1,8 +1,6 @@
 """CV upload and Resume API routes."""
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
-
 from api.schemas.resumeSchema import (
     AddCvRequest,
     DeleteResumeResponse,
@@ -57,7 +55,7 @@ async def upload_cv(
         ) from e
 
     try:
-        resume = upload_service.upload_cv(
+        resume = await upload_service.upload_cv(
             user_id=current_user.id,
             file_content=content,
             filename=file.filename or "document",
@@ -82,24 +80,24 @@ async def upload_cv(
 
 
 @router.get("/resumes", response_model=list[ResumeResponse])
-def get_user_resumes(
+async def get_user_resumes(
     current_user: CurrentUser,
     resume_service: ResumeServiceDep,
 ) -> list[ResumeResponse]:
     """Return all resumes that belong to the current user."""
-    resumes = resume_service.get_user_resumes(current_user.id)
+    resumes = await resume_service.get_user_resumes(current_user.id)
     return [_resume_entity_to_response(r) for r in resumes]
 
 
 @router.get("/resumes/{resume_id}", response_model=ResumeResponse)
-def get_resume_by_id(
+async def get_resume_by_id(
     resume_id: int,
     current_user: CurrentUser,
     resume_service: ResumeServiceDep,
 ) -> ResumeResponse:
     """Return a resume by id. 404 if not found or not owned by current user."""
     try:
-        resume = resume_service.get_resume_by_id(resume_id)
+        resume = await resume_service.get_resume_by_id(resume_id)
     except ResumeNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
     if resume.user_id != current_user.id:
@@ -108,13 +106,13 @@ def get_resume_by_id(
 
 
 @router.post("/resumes", response_model=ResumeResponse)
-def add_cv(
+async def add_cv(
     body: AddCvRequest,
     current_user: CurrentUser,
     resume_service: ResumeServiceDep,
 ) -> ResumeResponse:
     """Create a new resume (file_path, optional file_name and extracted_text) for the current user."""
-    resume = resume_service.add_cv(
+    resume = await resume_service.add_cv(
         user_id=current_user.id,
         file_path=body.file_path,
         file_name=body.file_name,
@@ -124,24 +122,24 @@ def add_cv(
 
 
 @router.delete("/resumes/{resume_id}", response_model=DeleteResumeResponse)
-def delete_cv(
+async def delete_cv(
     resume_id: int,
     current_user: CurrentUser,
     resume_service: ResumeServiceDep,
 ) -> DeleteResumeResponse:
     """Delete a resume. 404 if not found or not owned by current user."""
     try:
-        resume = resume_service.get_resume_by_id(resume_id)
+        resume = await resume_service.get_resume_by_id(resume_id)
     except ResumeNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
     if resume.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
-    resume_service.delete_cv(resume_id)
+    await resume_service.delete_cv(resume_id)
     return DeleteResumeResponse(message="Resume deleted successfully")
 
 
 @router.patch("/resumes/{resume_id}/file-name", response_model=ResumeResponse)
-def update_file_name(
+async def update_file_name(
     resume_id: int,
     body: UpdateFileNameRequest,
     current_user: CurrentUser,
@@ -149,10 +147,10 @@ def update_file_name(
 ) -> ResumeResponse:
     """Update file name (and rename file on disk). 404 if not found or not owned by current user."""
     try:
-        resume = resume_service.get_resume_by_id(resume_id)
+        resume = await resume_service.get_resume_by_id(resume_id)
     except ResumeNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
     if resume.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
-    resume = resume_service.update_file_name(resume_id, body.new_file_name)
+    resume = await resume_service.update_file_name(resume_id, body.new_file_name)
     return _resume_entity_to_response(resume)

@@ -1,5 +1,6 @@
-"""User repository implementation using SQLAlchemy."""
-from sqlalchemy.orm import Session
+"""User repository implementation using SQLAlchemy (async)."""
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Application.DTOs import UpdateUserDTO
 from Domain.repositories.user_repository import UserRepositoryInterface
@@ -8,9 +9,9 @@ from Infrastructure.Database.models.user_model import UserModel
 
 
 class UserRepository(UserRepositoryInterface):
-    """SQLAlchemy implementation of UserRepository."""
+    """SQLAlchemy async implementation of UserRepository."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
     def _to_domain(self, model: UserModel) -> User:
@@ -22,7 +23,7 @@ class UserRepository(UserRepositoryInterface):
             created_at=model.created_at,
         )
 
-    def create_user(self, full_name: str, email: str, password_hash: str) -> User:
+    async def create_user(self, full_name: str, email: str, password_hash: str) -> User:
         email_normalized = email.strip().lower()
         model = UserModel(
             full_name=full_name,
@@ -30,27 +31,32 @@ class UserRepository(UserRepositoryInterface):
             password=password_hash,
         )
         self._db.add(model)
-        self._db.commit()
-        self._db.refresh(model)
+        await self._db.commit()
+        await self._db.refresh(model)
         return self._to_domain(model)
 
-    def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str) -> User | None:
         email_normalized = email.strip().lower()
-        model = self._db.query(UserModel).filter(UserModel.email == email_normalized).first()
+        result = await self._db.execute(
+            select(UserModel).where(UserModel.email == email_normalized)
+        )
+        model = result.scalar_one_or_none()
         return self._to_domain(model) if model else None
 
-    def get_by_id(self, user_id: int) -> User | None:
-        model = self._db.query(UserModel).filter(UserModel.id == user_id).first()
+    async def get_by_id(self, user_id: int) -> User | None:
+        result = await self._db.execute(select(UserModel).where(UserModel.id == user_id))
+        model = result.scalar_one_or_none()
         return self._to_domain(model) if model else None
 
-    def update_user(self, request: UpdateUserDTO) -> User | None:
-        model = self._db.query(UserModel).filter(UserModel.id == request.id).first()
+    async def update_user(self, request: UpdateUserDTO) -> User | None:
+        result = await self._db.execute(select(UserModel).where(UserModel.id == request.id))
+        model = result.scalar_one_or_none()
         if not model:
             return None
         model.full_name = request.full_name
         model.email = request.email.strip().lower()
-        model.password = request.password
-        self._db.commit()
-        self._db.refresh(model)
+        if request.password is not None:
+            model.password = request.password
+        await self._db.commit()
+        await self._db.refresh(model)
         return self._to_domain(model)
-    
