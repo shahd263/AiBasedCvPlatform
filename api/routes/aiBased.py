@@ -33,11 +33,16 @@ async def generate_cv(
 
 
 @router.post("/generate-cover-letter")
-async def generate_letter(request: CoverLetterRequest):
-    letter = await generate_cover_letter(
-        request.cv,
-        request.job_description
-    )
+async def generate_letter(request: CoverLetterRequest, current_user: CurrentUser):
+    try:
+        letter = await generate_cover_letter(
+                request.cv,
+                request.job_description
+            )
 
-    return { letter}
+        return { "letter": letter}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
