@@ -7,13 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from Application.DTOs.AuthResultDTO import AuthResult
 from Application.Services.AuthenticationService import AuthenticationService
-from Application.Services.GenerateCvService import GenerateCvService
+from Application.Services.GenerateService import GenerateService
 from Application.Services.ResumeService import ResumeService
-from Application.Services.UploadCVService import UploadCVService
+from Application.Services.TemplateService import TemplateService
 from Domain.repositories.resume_repository import ResumeRepositoryInterface
+from Domain.repositories.template_repository import TemplateRepositoryInterface
 from Domain.repositories.user_repository import UserRepositoryInterface
 from Infrastructure.Database.database import get_db
 from Infrastructure.Repositories.resume_repository_impl import ResumeRepository
+from Infrastructure.Repositories.template_repository_impl import TemplateRepository
 from Infrastructure.Repositories.user_repository_impl import UserRepository
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -40,18 +42,26 @@ def get_resume_repository(
     return ResumeRepository(db)
 
 
-def get_upload_cv_service(
-    repo: Annotated[ResumeRepositoryInterface, Depends(get_resume_repository)],
-) -> UploadCVService:
-    """Provide UploadCVService."""
-    return UploadCVService(repo)
-
 
 def get_resume_service(
     repo: Annotated[ResumeRepositoryInterface, Depends(get_resume_repository)],
 ) -> ResumeService:
     """Provide ResumeService."""
     return ResumeService(repo)
+
+
+def get_template_repository(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> TemplateRepositoryInterface:
+    """Provide TemplateRepository implementation."""
+    return TemplateRepository(db)
+
+
+def get_template_service(
+    repo: Annotated[TemplateRepositoryInterface, Depends(get_template_repository)],
+) -> TemplateService:
+    """Provide TemplateService."""
+    return TemplateService(repo)
 
 
 async def get_current_user(
@@ -74,5 +84,5 @@ async def get_current_user(
         )
     return result
 
-def get_generate_cv_service() -> GenerateCvService:
-    return GenerateCvService()
+def get_generate_service() -> GenerateService:
+    return GenerateService()

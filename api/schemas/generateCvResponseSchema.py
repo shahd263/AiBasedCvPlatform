@@ -27,11 +27,6 @@ class EducationSchema(BaseModel):
     gpa: Optional[str] = None
 
 
-# class SkillsSchema(BaseModel):
-#     technicalSkills: Optional[List[str]] = None
-#     softSkills: Optional[List[str]] = None
-
-
 class ProjectSchema(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -49,7 +44,7 @@ class LanguageSchema(BaseModel):
     proficiency: Optional[str] = None
 
 
-class ResumeSchema(BaseModel):
+class GeneratedResumeSchema(BaseModel):
     header: Optional[HeaderSchema] = None
     professionalSummary: Optional[str] = None
     experience: Optional[List[ExperienceSchema]] = None
@@ -58,3 +53,7 @@ class ResumeSchema(BaseModel):
     projects: Optional[List[ProjectSchema]] = None
     certifications: Optional[List[CertificationSchema]] = None
     languages: Optional[List[LanguageSchema]] = None
+
+class CvGenerateResponse(BaseModel):
+    template_id: int
+    generate_cv_response: GeneratedResumeSchema

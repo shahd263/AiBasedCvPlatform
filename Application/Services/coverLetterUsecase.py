@@ -16,3 +16,4 @@ async def generate_cover_letter(cv_data: str, job_description: str):
     )    # Convert escaped newlines to actual line breaks for readability
     return  response.text
 
+

@@ -1,27 +1,24 @@
-from fastapi import APIRouter , Depends
-from typing import Annotated, Any
-from fastapi import  HTTPException
-from Application.DTOs.AuthResultDTO import AuthResult
-from Application.Services.GenerateCvService import GenerateCvService
-from Application.Services.coverLetterUsecase import generate_cover_letter
-from Core.dependencies import get_current_user, get_generate_cv_service
-from api.schemas.generateCvRrequestSchema import CandidateDataSchema, CoverLetterRequest
-from api.schemas.generateCvResponseSchema import ResumeSchema
+from fastapi import APIRouter , Depends , HTTPException
+from typing import Annotated
+from Application.Services.GenerateService import GenerateService
+from Core.dependencies import get_generate_service
+from api.schemas.generateCvRrequestSchema import CvGenerateRequest, CoverLetterRequest
+from api.schemas.generateCvResponseSchema import CvGenerateResponse, GeneratedResumeSchema
 
 router = APIRouter(prefix="/aiBased", tags=["aiBased"])
 
-GenerateCvServiceDep = Annotated[GenerateCvService, Depends(get_generate_cv_service)]
-CurrentUser = Annotated[AuthResult, Depends(get_current_user)]
+GenerateServiceDep = Annotated[GenerateService, Depends(get_generate_service)]
 
-@router.post("/generate-cv", response_model=dict[str, Any])
+
+@router.post("/generate-cv", response_model=CvGenerateResponse)
 async def generate_cv(
-    request: CandidateDataSchema,
-    current_user: CurrentUser,
-    service: GenerateCvServiceDep,
-) -> dict[str, Any]:
+    request: CvGenerateRequest,
+    service: GenerateServiceDep,
+) -> CvGenerateResponse:
     """Accept candidate data as JSON and return an ATS-optimized CV in JSON."""
     try:
-        return await service.generate_cv(request.model_dump())
+        cv_data = await service.generate_cv(request.candidate_data.model_dump())
+        return CvGenerateResponse(template_id=request.template_id, generate_cv_response=GeneratedResumeSchema(**cv_data))
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
     except Exception as e:
@@ -33,12 +30,9 @@ async def generate_cv(
 
 
 @router.post("/generate-cover-letter")
-async def generate_letter(request: CoverLetterRequest, current_user: CurrentUser):
+async def generate_letter(request: CoverLetterRequest , service: GenerateServiceDep):
     try:
-        letter = await generate_cover_letter(
-                request.cv,
-                request.job_description
-            )
+        letter = await service.generate_cover_letter(request.cv, request.job_description)
 
         return { "letter": letter}
     except ValueError as e:

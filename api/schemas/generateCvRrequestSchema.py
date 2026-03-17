@@ -57,6 +57,11 @@ class CandidateDataSchema(BaseModel):
     languages: Optional[List[LanguageSchema]] = None
 
 
+class CvGenerateRequest(BaseModel):
+    template_id: int
+    candidate_data: CandidateDataSchema
+
 class CoverLetterRequest(BaseModel):
     cv: str
     job_description: str
+

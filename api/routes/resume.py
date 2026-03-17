@@ -1,6 +1,8 @@
 """CV upload and Resume API routes."""
+from io import BytesIO
 from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
+from starlette.responses import StreamingResponse
 from api.schemas.resumeSchema import (
     AddCvRequest,
     DeleteResumeResponse,
@@ -8,17 +10,17 @@ from api.schemas.resumeSchema import (
     UpdateFileNameRequest,
 )
 from Application.DTOs.AuthResultDTO import AuthResult
-from Application.Services.ResumeService import ResumeNotFoundError, ResumeService
-from Application.Services.UploadCVService import (
-    CVTextExtractionError,
+from Application.Services.ResumeService import (
+    ResumeNotFoundError,
+    ResumeService,
     InvalidCVFileError,
-    UploadCVService,
+    CVTextExtractionError,
+    PdfGenerationError,
 )
-from Core.dependencies import get_current_user, get_resume_service, get_upload_cv_service
-
+from Core.dependencies import get_current_user, get_resume_service
+from api.schemas.templateSchema import CvPreviewResponse
 router = APIRouter(tags=["resume"])
 
-UploadCVServiceDep = Annotated[UploadCVService, Depends(get_upload_cv_service)]
 ResumeServiceDep = Annotated[ResumeService, Depends(get_resume_service)]
 CurrentUser = Annotated[AuthResult, Depends(get_current_user)]
 
@@ -39,7 +41,7 @@ def _resume_entity_to_response(resume) -> ResumeResponse:
 @router.post("/upload-cv", response_model=ResumeResponse)
 async def upload_cv(
     current_user: CurrentUser,
-    upload_service: UploadCVServiceDep,
+    resume_service: ResumeServiceDep,
     file: UploadFile = File(..., description="CV file (PDF or DOCX, max 5MB)"),
 ) -> ResumeResponse:
     """
@@ -55,7 +57,7 @@ async def upload_cv(
         ) from e
 
     try:
-        resume = await upload_service.upload_cv(
+        resume = await resume_service.upload_cv(
             user_id=current_user.id,
             file_content=content,
             filename=file.filename or "document",
@@ -63,17 +65,32 @@ async def upload_cv(
     except InvalidCVFileError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message) from e
     except CVTextExtractionError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=e.message,
-        ) from e
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to save resume. Please try again.",
-        ) from e
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
     return _resume_entity_to_response(resume)
+
+
+@router.post("/confirm-cv-generation")
+async def save_as_pdf(resume_service: ResumeServiceDep, body: CvPreviewResponse ,current_user: CurrentUser):
+
+    try:
+        pdf_bytes = await resume_service.generate_pdf_from_html(body.html, body.filename, current_user.id)
+    except InvalidCVFileError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message) from e
+    except CVTextExtractionError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+    except PdfGenerationError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={body.filename}.pdf"
+        }
+    )
 
 
 # --- Resume CRUD ---

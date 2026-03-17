@@ -32,6 +32,7 @@ class ResumeRepositoryInterface(ABC):
     async def delete_resume(self, resume_id: int) -> bool:
         """Delete resume by id. Returns True if deleted, False if not found."""
         ...
+        
 
     @abstractmethod
     async def update_file_name(

@@ -8,41 +8,17 @@ import json
 import re
 from typing import Any
 from Infrastructure.Ai.Gemini_Client import GeminiClient
+from Infrastructure.Ai.Prompts.CoverLetterPrompt import COVER_LETTER_PROMPT
 from Infrastructure.Ai.Prompts.GenerateResumePrompt import CV_GENERATOR_PROMPT
+from Utils.enhance_ai_output import enhance_ai_output
 
 
-class GenerateCvService:
+class GenerateService:
     """Handles CV generation via GenAI and JSON output normalization."""
 
-    @staticmethod
-    async def enhance_cv_output(raw_text: str) -> dict[str, Any]:
-        """
-        Normalize and parse model output into valid JSON.
-        Strips markdown code fences and fixes common JSON issues.
-        """
-        if not raw_text or not raw_text.strip():
-            raise ValueError("Model returned empty output.")
-
-        text = raw_text.strip()
-
-        json_block = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-        if json_block:
-            text = json_block.group(1).strip()
-        else:
-            text = text.strip()
-
-        text = re.sub(r",\s*([}\]])", r"\1", text)
-
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as e:
-            obj_match = re.search(r"\{[\s\S]*\}", text)
-            if obj_match:
-                try:
-                    return json.loads(obj_match.group(0))
-                except json.JSONDecodeError:
-                    pass
-            raise ValueError(f"Could not parse model output as JSON: {e}") from e
+    
+    # def __init__(self):
+    #     self.client = GeminiClient()
 
     async def _extract_response_text(self, response: Any) -> str:
         raw = getattr(response, "text", None) or ""
@@ -65,4 +41,18 @@ class GenerateCvService:
         response = await client.generate_text(prompt)
 
         raw_text = await self._extract_response_text(response)
-        return await self.enhance_cv_output(raw_text)
+        return await enhance_ai_output(raw_text)
+
+    async def generate_cover_letter(self, cv_data: str, job_description: str) -> dict[str, Any]:
+        client = GeminiClient()
+        response = await client.generate_text(
+            prompt=COVER_LETTER_PROMPT.format(
+                cv_data=cv_data,
+                job_description=job_description
+            ),
+            model="gemini-2.5-flash"
+        )   
+        raw_text = await self._extract_response_text(response)
+        return await enhance_ai_output(raw_text)
+
+        

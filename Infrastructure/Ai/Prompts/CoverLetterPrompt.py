@@ -19,7 +19,7 @@ CONSTRAINTS
 - Avoid generic phrases
 - Output ONLY the cover letter text (no explanations)
 
-STRUCTURE
+STRUCTURE (JSON KEYS)
 
 1. Greeting  
 Start with: **Dear Hiring Manager,**
@@ -45,6 +45,9 @@ Start with: **Dear Hiring Manager,**
 6. Closing (1–2 sentences)  
 - Express appreciation  
 - Reinforce interest in discussing the opportunity
+
+OUTPUT FORMAT
+Return the final Cover Letter as a well-structured JSON object following the sections and rules described above.
 
 INPUT DATA
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from Core.config import settings
 from Infrastructure.Database.base import Base
-from Infrastructure.Database.models import UserModel, ResumeModel  # noqa: F401 - register models
+from Infrastructure.Database.models import UserModel, ResumeModel, TemplateModel  # noqa: F401 - register models
 
 # Async engine and session for the application
 async_engine = create_async_engine(

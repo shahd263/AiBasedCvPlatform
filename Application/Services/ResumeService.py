@@ -1,9 +1,17 @@
 """Resume CRUD service (async): get by id, list by user, add, delete, update file name."""
 import asyncio
 from pathlib import Path
-
 from Domain.repositories.resume_repository import ResumeRepositoryInterface
 from Entites.Resume import Resume
+from weasyprint import HTML
+
+from Utils.file_storage import (
+    InvalidCVFileError,
+    ensure_upload_dir,
+    uuid_save_path,
+    validate_file,
+)
+from Utils.text_extractor import CVTextExtractionError, extract_text
 
 
 class ResumeNotFoundError(Exception):
@@ -12,6 +20,10 @@ class ResumeNotFoundError(Exception):
     def __init__(self, resume_id: int) -> None:
         self.resume_id = resume_id
         super().__init__(f"Resume not found: id={resume_id}")
+
+
+class PdfGenerationError(Exception):
+    """Raised when generating or storing a PDF representation of a resume fails."""
 
 
 class ResumeService:
@@ -49,7 +61,7 @@ class ResumeService:
 
     async def delete_cv(self, resume_id: int) -> None:
         """Delete the resume and the local file. Raises ResumeNotFoundError if not found."""
-        resume = await self._repo.get_by_id(resume_id)
+        resume = await self.get_resume_by_id(resume_id)
         if not resume:
             raise ResumeNotFoundError(resume_id)
         file_path = Path(resume.file_path)
@@ -72,3 +84,67 @@ class ResumeService:
         if not updated:
             raise ResumeNotFoundError(resume_id)
         return updated
+
+    async def upload_cv(
+            self,
+            user_id: int,
+            file_content: bytes,
+            filename: str,
+        ) -> Resume:
+            """
+            Validate file, save to uploads/, extract text, persist Resume.
+            Returns domain Resume entity.
+            """
+            file_size = len(file_content)
+            ext = validate_file(filename, file_size)
+
+            upload_dir = ensure_upload_dir()
+            save_path = uuid_save_path(upload_dir, ext)
+            try:
+                await asyncio.to_thread(save_path.write_bytes, file_content)
+            except OSError as e:
+                raise InvalidCVFileError(f"Failed to save file: {e!s}") from e
+
+            try:
+                extracted_text = await asyncio.to_thread(extract_text, save_path, ext)
+            except CVTextExtractionError:
+                await asyncio.to_thread(save_path.unlink, True)
+                raise
+            except Exception as e:
+                await asyncio.to_thread(save_path.unlink, True)
+                raise CVTextExtractionError(f"Text extraction failed: {e!s}") from e
+
+            file_path_str = str(save_path).replace("\\", "/")
+            original_file_name = Path(filename).stem or "document"
+            resume = await self.add_cv(
+                user_id=user_id,
+                file_path=file_path_str,
+                file_name=original_file_name,
+                extracted_text=extracted_text or None,
+            )
+            return resume
+
+    async def generate_pdf_from_html(self, html: str ,filename: str, user_id: int) -> bytes:
+        """Generate a PDF from HTML and store it as a resume for the user.
+
+        Raises:
+            InvalidCVFileError: if the generated file doesn't pass validation.
+            CVTextExtractionError: if text extraction from the generated PDF fails.
+            PdfGenerationError: for low‑level PDF generation or persistence failures.
+        """
+        try:
+            file_content = HTML(string=html).write_pdf()
+        except Exception as e:
+            # Critical failure while rendering HTML to PDF (e.g. invalid HTML/CSS or engine error)
+            raise PdfGenerationError(f"Failed to generate PDF from HTML: {e!s}") from e
+
+        try:
+            await self.upload_cv(user_id, file_content, filename + ".pdf")
+        except (InvalidCVFileError, CVTextExtractionError):
+            # Let validation/text‑extraction errors propagate as‑is so the API can respond appropriately
+            raise
+        except Exception as e:
+            # Critical failure during persistence (e.g. database or filesystem issue)
+            raise PdfGenerationError(f"Failed to persist generated PDF: {e!s}") from e
+
+        return file_content

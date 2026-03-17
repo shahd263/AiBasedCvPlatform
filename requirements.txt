@@ -19,3 +19,5 @@ bcrypt>=4.0.0
 # CV processing
 python-docx>=1.0.0
 pdfplumber>=0.10.0
+weasyprint>=69.0
+jinja2>=3.0.0
