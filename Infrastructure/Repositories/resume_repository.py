@@ -5,12 +5,11 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Domain.repositories.resume_repository import ResumeRepositoryInterface
 from Entites.Resume import Resume
 from Infrastructure.Database.models.resume_model import ResumeModel
 
 
-class ResumeRepository(ResumeRepositoryInterface):
+class ResumeRepository():
     """SQLAlchemy async implementation of ResumeRepository."""
 
     def __init__(self, db: AsyncSession) -> None:

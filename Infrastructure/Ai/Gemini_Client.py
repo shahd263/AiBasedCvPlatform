@@ -10,7 +10,7 @@ class GeminiClient:
     def __init__(self) -> None:
         self.client = Client(api_key=settings.GEMINI_API_KEY)
 
-    async def generate_text(self, prompt: str, model: str = "gemini-2.5-flash") -> Any:
+    async def generate_text(self, prompt: str, model: str = "gemini-2.5-flash-lite") -> Any:
         """
         Generate text using Google Gemini. Uses async client (.aio) when available,
         otherwise runs sync generate_content in a thread.

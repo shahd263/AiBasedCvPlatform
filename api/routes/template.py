@@ -1,12 +1,10 @@
 """Template API routes."""
-from io import BytesIO
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from starlette.responses import HTMLResponse, StreamingResponse
-
 from api.schemas.generateCvResponseSchema import CvGenerateResponse
-from api.schemas.templateSchema import CvPreviewResponse, TemplateSchema
+from api.schemas.templateSchema import PreviewResponse, TemplateSchema
 from Application.Services.TemplateService import TemplateNotFoundError, TemplateService
 from Core.dependencies import get_template_service
 
@@ -50,23 +48,23 @@ async def get_template_by_id(
         )
     return _template_entity_to_schema(template)
 
-@router.post("/cv-preview", response_model=CvPreviewResponse)
-async def cv_preview(body: CvGenerateResponse, template_service: TemplateServiceDep) -> CvPreviewResponse:
-    """
-    Render CV as HTML for preview.
-    """
-    html = await template_service.render_html_template(body.template_id, body.generate_cv_response.model_dump())
-    filename = body.generate_cv_response.header.fullName + " - " + body.generate_cv_response.header.jobTitle or "cv"
-    return CvPreviewResponse(html=html, filename=filename)
+# @router.post("/cv-preview", response_model=PreviewResponse)
+# async def cv_preview(body: CvGenerateResponse, template_service: TemplateServiceDep) -> PreviewResponse:
+#     """
+#     Render CV as HTML for preview.
+#     """
+#     html = await template_service.render_html_template(body.template_id, body.generate_cv_response.model_dump())
+#     filename = body.generate_cv_response.header.fullName + " - " + body.generate_cv_response.header.jobTitle or "cv"
+#     return PreviewResponse(html=html, filename=filename)
 
-@router.post("/save-as-pdf")
-async def save_as_pdf(template_service: TemplateServiceDep,html: str = Body(..., media_type="text/html")):
-    pdf_bytes = template_service.generate_pdf_from_html(html)
+# @router.post("/save-as-pdf")
+# async def save_as_pdf(template_service: TemplateServiceDep,html: str = Body(..., media_type="text/html")):
+#     pdf_bytes = template_service.generate_pdf_from_html(html)
 
-    return StreamingResponse(
-        BytesIO(pdf_bytes),
-        media_type="application/pdf",
-        headers={
-            "Content-Disposition": "attachment; filename=cv.pdf"
-        }
-    )
+#     return StreamingResponse(
+#         BytesIO(pdf_bytes),
+#         media_type="application/pdf",
+#         headers={
+#             "Content-Disposition": "attachment; filename=cv.pdf"
+#         }
+#     )

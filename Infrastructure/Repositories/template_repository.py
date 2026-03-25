@@ -2,12 +2,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Domain.repositories.template_repository import TemplateRepositoryInterface
 from Entites.Template import Template
 from Infrastructure.Database.models.template_model import TemplateModel
 
 
-class TemplateRepository(TemplateRepositoryInterface):
+class TemplateRepository():
     """SQLAlchemy async implementation of TemplateRepository."""
 
     def __init__(self, db: AsyncSession) -> None:

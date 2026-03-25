@@ -18,7 +18,7 @@ from Application.Services.ResumeService import (
     PdfGenerationError,
 )
 from Core.dependencies import get_current_user, get_resume_service
-from api.schemas.templateSchema import CvPreviewResponse
+from api.schemas.templateSchema import PreviewResponse
 router = APIRouter(tags=["resume"])
 
 ResumeServiceDep = Annotated[ResumeService, Depends(get_resume_service)]
@@ -73,7 +73,7 @@ async def upload_cv(
 
 
 @router.post("/confirm-cv-generation")
-async def save_as_pdf(resume_service: ResumeServiceDep, body: CvPreviewResponse ,current_user: CurrentUser):
+async def save_as_pdf(resume_service: ResumeServiceDep, body: PreviewResponse ,current_user: CurrentUser):
 
     try:
         pdf_bytes = await resume_service.generate_pdf_from_html(body.html, body.filename, current_user.id)

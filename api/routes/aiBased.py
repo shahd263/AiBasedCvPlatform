@@ -1,28 +1,31 @@
 from fastapi import APIRouter , Depends , HTTPException
 from typing import Annotated
-from Application.Services.GenerateService import GenerateService
-from Core.dependencies import get_generate_service
+from Application.Services.AiService import AiService  
+from Core.dependencies import get_ai_service, get_cover_letter_usecase, get_preview_usecase
 from api.schemas.generateCvRrequestSchema import CvGenerateRequest, CoverLetterRequest
-from api.schemas.generateCvResponseSchema import CvGenerateResponse, GeneratedResumeSchema
+from Application.Usecases.coverLetterUsecase import CoverLetterUsecase
+from Application.Usecases.preview_Usecase import GeneratePreviewUsecase
+from api.schemas.templateSchema import PreviewResponse
 
 router = APIRouter(prefix="/aiBased", tags=["aiBased"])
 
-GenerateServiceDep = Annotated[GenerateService, Depends(get_generate_service)]
+AiServiceDep = Annotated[AiService, Depends(get_ai_service)]
+CoverLetterUsecaseDep = Annotated[CoverLetterUsecase, Depends(get_cover_letter_usecase)]
+PreviewUsecaseDep = Annotated[GeneratePreviewUsecase, Depends(get_preview_usecase)]
 
 
-@router.post("/generate-cv", response_model=CvGenerateResponse)
+@router.post("/generate-cv", response_model=PreviewResponse)
 async def generate_cv(
     request: CvGenerateRequest,
-    service: GenerateServiceDep,
-) -> CvGenerateResponse:
+    usecase: PreviewUsecaseDep,
+) -> PreviewResponse:
     """Accept candidate data as JSON and return an ATS-optimized CV in JSON."""
     try:
-        cv_data = await service.generate_cv(request.candidate_data.model_dump())
-        return CvGenerateResponse(template_id=request.template_id, generate_cv_response=GeneratedResumeSchema(**cv_data))
+        cv_data = await usecase.cv_preview(request.template_id, request.candidate_data.model_dump())
+        return PreviewResponse(html=cv_data["html"], filename=cv_data["filename"])
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
     except Exception as e:
-        # Return the real exception type/message to make debugging possible.
         raise HTTPException(
             status_code=502,
             detail=f"GenAI request failed ({type(e).__name__}): {e}",
@@ -30,9 +33,9 @@ async def generate_cv(
 
 
 @router.post("/generate-cover-letter")
-async def generate_letter(request: CoverLetterRequest , service: GenerateServiceDep):
+async def generate_letter(request: CoverLetterRequest , usecase: CoverLetterUsecaseDep):
     try:
-        letter = await service.generate_cover_letter(request.cv, request.job_description)
+        letter = await usecase.generate_cover_letter(request.cvId, request.job_description)
 
         return { "letter": letter}
     except ValueError as e:

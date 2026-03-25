@@ -7,29 +7,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from Application.DTOs.AuthResultDTO import AuthResult
 from Application.Services.AuthenticationService import AuthenticationService
-from Application.Services.GenerateService import GenerateService
+from Application.Services.AiService import AiService
 from Application.Services.ResumeService import ResumeService
 from Application.Services.TemplateService import TemplateService
-from Domain.repositories.resume_repository import ResumeRepositoryInterface
-from Domain.repositories.template_repository import TemplateRepositoryInterface
-from Domain.repositories.user_repository import UserRepositoryInterface
+from Application.Services.FileParserService import FileParserService
+from Application.Services.fileStorageService import FileStorageService
 from Infrastructure.Database.database import get_db
-from Infrastructure.Repositories.resume_repository_impl import ResumeRepository
-from Infrastructure.Repositories.template_repository_impl import TemplateRepository
-from Infrastructure.Repositories.user_repository_impl import UserRepository
+from Infrastructure.Ai.Gemini_Client import GeminiClient
+from Infrastructure.Repositories.resume_repository import ResumeRepository
+from Infrastructure.Repositories.template_repository import TemplateRepository
+from Infrastructure.Repositories.user_repository import UserRepository
+from Application.Usecases.coverLetterUsecase import CoverLetterUsecase
+from Application.Usecases.preview_Usecase import GeneratePreviewUsecase
+
 
 security_scheme = HTTPBearer(auto_error=False)
 
 
 def get_user_repository(
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> UserRepositoryInterface:
+) -> UserRepository:
     """Provide UserRepository implementation."""
     return UserRepository(db)
 
 
 def get_authentication_service(
-    repo: Annotated[UserRepositoryInterface, Depends(get_user_repository)],
+    repo: Annotated[UserRepository, Depends(get_user_repository)],
 ) -> AuthenticationService:
     """Provide AuthenticationService."""
     return AuthenticationService(repo)
@@ -37,28 +40,35 @@ def get_authentication_service(
 
 def get_resume_repository(
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> ResumeRepositoryInterface:
+) -> ResumeRepository:
     """Provide ResumeRepository implementation."""
     return ResumeRepository(db)
 
 
+def get_file_parser_service() -> FileParserService:
+    return FileParserService()
+
+def get_file_storage_service() -> FileStorageService:
+    return FileStorageService()
 
 def get_resume_service(
-    repo: Annotated[ResumeRepositoryInterface, Depends(get_resume_repository)],
+    repo: Annotated[ResumeRepository, Depends(get_resume_repository)], 
+    file_parser_service: Annotated[FileParserService, Depends(get_file_parser_service)],
+    file_storage_service: Annotated[FileStorageService, Depends(get_file_storage_service)],
 ) -> ResumeService:
     """Provide ResumeService."""
-    return ResumeService(repo)
+    return ResumeService(repo, file_parser_service, file_storage_service)
 
 
 def get_template_repository(
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> TemplateRepositoryInterface:
+) -> TemplateRepository:
     """Provide TemplateRepository implementation."""
     return TemplateRepository(db)
 
 
 def get_template_service(
-    repo: Annotated[TemplateRepositoryInterface, Depends(get_template_repository)],
+    repo: Annotated[TemplateRepository, Depends(get_template_repository)],
 ) -> TemplateService:
     """Provide TemplateService."""
     return TemplateService(repo)
@@ -84,5 +94,20 @@ async def get_current_user(
         )
     return result
 
-def get_generate_service() -> GenerateService:
-    return GenerateService()
+
+
+def get_ai_service() -> AiService:
+    return AiService(GeminiClient())
+
+def get_cover_letter_usecase(
+    ai_service: Annotated[AiService, Depends(get_ai_service)],
+    resume_service: Annotated[ResumeService, Depends(get_resume_service)],
+) -> CoverLetterUsecase:
+    return CoverLetterUsecase(ai_service, resume_service)
+
+def get_preview_usecase(
+    ai_service: Annotated[AiService, Depends(get_ai_service)],
+    template_service: Annotated[TemplateService, Depends(get_template_service)],
+    resume_service: Annotated[ResumeService, Depends(get_resume_service)],
+) -> GeneratePreviewUsecase:
+    return GeneratePreviewUsecase(ai_service, template_service, resume_service)

@@ -1,8 +1,6 @@
 """Auth API routes."""
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, status
-
 from Application.DTOs.UpdateUserDTO import UpdateUserDTO
 from api.schemas.authSchema import (
     LoginRequest,

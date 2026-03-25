@@ -2,8 +2,9 @@
 from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
-from Domain.repositories.template_repository import TemplateRepositoryInterface
+from Infrastructure.Repositories.template_repository import TemplateRepository
 from Entites.Template import Template
+
 TEMPLATES_DIR = Path(__file__).parent.parent.parent / "Templates" / "Cvs"
 
 
@@ -19,7 +20,7 @@ class TemplateNotFoundError(Exception):
 class TemplateService:
     """Handles template queries: get all templates, get by id."""
 
-    def __init__(self, template_repository: TemplateRepositoryInterface) -> None:
+    def __init__(self, template_repository: TemplateRepository) -> None:
         self._repo = template_repository
 
     async def get_all(self) -> list[Template]:
@@ -34,14 +35,14 @@ class TemplateService:
         return template
     
 
-    async def render_html_template(self, template_id: int, resume: dict[str, Any]) -> str:
+    async def render_html_template(self, template_id: int, response: dict[str, Any]) -> str:
         template = await self.get_template_by_id(template_id)
         if not template:
             raise TemplateNotFoundError(template_id)
         env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         filename = template.template_path.split("/")[-1]
         template = env.get_template(filename)
-        html = template.render(resume=resume)
+        html = template.render(response=response)
         return html
     
 

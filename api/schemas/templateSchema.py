@@ -11,6 +11,6 @@ class TemplateSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class CvPreviewResponse(BaseModel):
+class PreviewResponse(BaseModel):
     html: str
     filename: str

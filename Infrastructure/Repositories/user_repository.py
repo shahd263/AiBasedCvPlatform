@@ -3,12 +3,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Application.DTOs import UpdateUserDTO
-from Domain.repositories.user_repository import UserRepositoryInterface
 from Entites.User import User
 from Infrastructure.Database.models.user_model import UserModel
 
 
-class UserRepository(UserRepositoryInterface):
+class UserRepository():
     """SQLAlchemy async implementation of UserRepository."""
 
     def __init__(self, db: AsyncSession) -> None:

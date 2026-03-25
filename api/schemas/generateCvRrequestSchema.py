@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import List, Optional
 
 
@@ -62,6 +62,6 @@ class CvGenerateRequest(BaseModel):
     candidate_data: CandidateDataSchema
 
 class CoverLetterRequest(BaseModel):
-    cv: str
+    cvId: int
     job_description: str
 

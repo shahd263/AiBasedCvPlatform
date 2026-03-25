@@ -21,9 +21,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI-based CV Platform", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # ممكن تحطي ["http://127.0.0.1:5500"] لو الصفحة محلية
-    allow_methods=["*"],   # السماح بكل methods
-    allow_headers=["*"],   # السماح بكل headers
+    allow_origins=["*"],   
+    allow_methods=["*"],   
+    allow_headers=["*"],   
 )
 
 app.include_router(auth_router, prefix="/api")

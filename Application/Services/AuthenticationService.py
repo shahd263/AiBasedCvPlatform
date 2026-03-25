@@ -2,7 +2,7 @@
 from Application.DTOs.AuthResultDTO import AuthResult
 from Application.DTOs.UpdateUserDTO import UpdateUserDTO
 from Core.security import create_access_token, decode_token, hash_password, verify_password
-from Domain.repositories.user_repository import UserRepositoryInterface
+from Infrastructure.Repositories.user_repository import UserRepository
 
 
 class EmailAlreadyRegisteredError(Exception):
@@ -14,7 +14,7 @@ class EmailAlreadyRegisteredError(Exception):
 class AuthenticationService:
     """Handles user registration, login, current user, and logout."""
 
-    def __init__(self, user_repository: UserRepositoryInterface) -> None:
+    def __init__(self, user_repository: UserRepository) -> None:
         self._user_repository = user_repository
 
     async def register(self, full_name: str, email: str, password: str) -> AuthResult:

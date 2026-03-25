@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ resume.header.fullName }} - {{ resume.header.jobTitle }}</title>
+    <title>{{ response.header.fullName }} - {{ response.header.jobTitle }}</title>
     <style>
         /* Page Setup for A4 */
         @page {
@@ -121,101 +121,101 @@
 
     <div class="page-container">
         <header>
-            <h1>{{ resume.header.fullName }}</h1>
-            <p class="subtitle">{{ resume.header.jobTitle }}</p>
+                <h1>{% if response.header.fullName %}{{ response.header.fullName }}{% endif %}</h1>
+            <p class="subtitle">{% if response.header.jobTitle %}{{ response.header.jobTitle }}{% endif %}</p>
             <div class="contact-info">
-                {{ resume.header.email }} 
-                {% if resume.header.urls %}
-                    {% for url in resume.header.urls %}
+                {% if response.header.email %}{{ response.header.email }}{% endif %} 
+                {% if response.header.urls %}
+                    {% for url in response.header.urls %}
                         | <a href="{{ url }}" style="text-decoration:none; color:inherit;">{{ url | replace('https://','') | replace('http://','') }}</a>
                     {% endfor %}
                 {% endif %}
                 <br>
-                {{ resume.header.location }} | {{ resume.header.phone }}
+                {% if response.header.location %}{{ response.header.location }}{% endif %} | {% if response.header.phone %}{{ response.header.phone }}{% endif %}
             </div>
         </header>
 
-        {% if resume.professionalSummary %}
+        {% if response.professionalSummary %}
         <div class="summary">
-            <p>{{ resume.professionalSummary }}</p>
+            <p>{% if response.professionalSummary %}{{ response.professionalSummary }}{% endif %}</p>
         </div>
         {% endif %}
 
-        {% if resume.experience %}
+        {% if response.experience %}
         <h2>Work Experience</h2>
-        {% for exp in resume.experience %}
+        {% for exp in response.experience %}
         <div class="entry">
             <div class="entry-header">
-                <span>{{ exp.jobTitle }}</span>
+                <span>{% if exp.jobTitle %}{{ exp.jobTitle }}{% endif %}</span>
                 <span>{{ exp.dates }}</span>
             </div>
             <div class="entry-subheader">
-                {{ exp.company }}{% if exp.location %}, {{ exp.location }}{% endif %}
+                {% if exp.company %}{{ exp.company }}{% endif %}{% if exp.location %}, {{ exp.location }}{% endif %}
             </div>
             <ul>
             {% for desc in exp.responsibilities %}
-                <li>{{ desc }}</li>
+                <li>{% if desc %}{{ desc }}{% endif %}</li>
             {% endfor %}
             </ul>
         </div>
         {% endfor %}
         {% endif %}
 
-        {% if resume.projects %}
+        {% if response.projects %}
         <h2>Projects</h2>
-        {% for project in resume.projects %}
+        {% for project in response.projects %}
         <div class="entry">
             <div class="entry-header">
-                <span>{{ project.name }}</span>
+                <span>{% if project.name %}{{ project.name }}{% endif %}</span>
                 <span>{% if project.dates %}{{ project.dates }}{% endif %}</span>
             </div>
-            <p>{{ project.description }}</p>
+            <p>{% if project.description %}{{ project.description }}{% endif %}</p>
             <p><strong>Technologies:</strong> {{ project.technologies | join(', ') }}</p>
         </div>
         {% endfor %}
         {% endif %}
 
-        {% if resume.education %}
+        {% if response.education %}
         <h2>Education</h2>
-        {% for edu in resume.education %}
+        {% for edu in response.education %}
         <div class="entry">
             <div class="entry-header">
-                <h3>{{ edu.university }}</h3>
-                <span>{{ edu.graduationYear }}</span>
+                <h3>{% if edu.university %}{{ edu.university }}{% endif %}</h3>
+                <span>{% if edu.graduationYear %}{{ edu.graduationYear }}{% endif %}</span>
             </div>
-            <p>{{ edu.degree }}{% if edu.major %}: {{ edu.major }}{% endif %}</p>
-            <p><strong>GPA:</strong> {{ edu.gpa }}</p>
+            <p>{% if edu.degree %}{{ edu.degree }}{% endif %}{% if edu.major %}: {% if edu.major %}{{ edu.major }}{% endif %}{% endif %}</p>
+            <p><strong>GPA:</strong> {% if edu.gpa %}{{ edu.gpa }}{% endif %}</p>
         </div>
         {% endfor %}
         {% endif %}
 
-        {% if resume.skills %}
+        {% if response.skills %}
         <div class="skills-section">
             <h2>Skills</h2>
             <ul>
-            {% for skill, items in resume.skills.items() %}
-                <li><strong>{{ skill }}:</strong> {{ items | join(', ') }}{% if not loop.last %} | {% endif %}</li>
+            {% for skill, items in response.skills.items() %}
+                <li><strong>{% if skill %}{{ skill }}:{% endif %}</strong> {% if items %}{{ items | join(', ') }}{% endif %}{% if not loop.last %}  {% endif %}</li>
             {% endfor %}
             </ul>
         </div>
         {% endif %}
-        {% if resume.certifications %}
+        {% if response.certifications %}
     <div class="certifications-section">
     <h2>Certifications</h2>
     <ul>
-    {% for cert in resume.certifications %}
-        <li>{{ cert.name }} ({{ cert.issuer }}{% if cert.year %}, {{ cert.year }}{% endif %}){% if not loop.last %}  {% endif %}</li>
+    {% for cert in response.certifications %}
+        <li>{% if cert.name %}{{ cert.name }}{% endif %} ({% if cert.issuer %}{{ cert.issuer }}{% endif %}{% if cert.year %}, {% if cert.year %}{{ cert.year }}{% endif %}{% endif %}){% if not loop.last %}  {% endif %}</li>
     {% endfor %}
     </ul>
     </div>
     {% endif %}
     
-    {% if resume.languages %}
+    {% if response.languages %}
     <div class="languages-section">
     <h2>Languages</h2>
     <ul>
-    {% for lang in resume.languages %}
-        <li><strong>{{ lang.language }}:</strong> {{ lang.proficiency }}{% if not loop.last %}  {% endif %}</li>
+    {% for lang in response.languages %}
+        <li><strong>{% if lang.language %}{{ lang.language }}:{% endif %}</strong> {% if lang.proficiency %}{{ lang.proficiency }}{% endif %}{% if not loop.last %}  {% endif %}</li>
     {% endfor %}
     </ul>
     </div>
