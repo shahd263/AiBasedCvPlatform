@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from Application.DTOs.UpdateUserDTO import UpdateUserDTO
 from api.schemas.authSchema import (
     LoginRequest,
+    ProfileResponse,
     RegisterRequest,
     UpdateProfileRequest,
     UserResponse,
@@ -30,7 +31,9 @@ async def register(
     """Register a new user. Returns user info and JWT."""
     try:
         result = await auth_service.register(
-            full_name=body.full_name, email=body.email, password=body.password
+            full_name=body.full_name, email=body.email, 
+            password=body.password, phone_number=body.phone_number, 
+            country=body.country, gender=body.gender,
         )
     except EmailAlreadyRegisteredError:
         raise HTTPException(
@@ -55,24 +58,34 @@ async def login(
     return UserResponse(full_name=result.full_name, email=result.email, token=result.token)
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=ProfileResponse)
 async def me(
     current_user: CurrentUser,
-) -> UserResponse:
+    auth_service: AuthServiceDep,
+) -> ProfileResponse:
     """Return current authenticated user (from JWT)."""
-    return UserResponse(
-        full_name=current_user.full_name,
-        email=current_user.email,
-        token=current_user.token,
+    user = await auth_service.get_user_by_id(current_user.id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return ProfileResponse(
+        full_name=user.full_name,
+        email=user.email,
+        phone_number=user.phone_number,
+        country=user.country,
+        gender=user.gender,   
     )
+    
 
 
-@router.patch("/me", response_model=UserResponse)
+@router.patch("/me", response_model=ProfileResponse)
 async def update_profile(
     body: UpdateProfileRequest,
     current_user: CurrentUser,
     auth_service: AuthServiceDep,
-) -> UserResponse:
+) -> ProfileResponse:
     """Update current user profile (full_name, email, and/or password). Returns updated user and new token."""
     try:
         request = UpdateUserDTO(
@@ -80,6 +93,9 @@ async def update_profile(
             full_name=body.full_name,
             email=body.email,
             password=body.password,
+            phone_number=body.phone_number,
+            country=body.country,
+            gender=body.gender,
         )
         result = await auth_service.update_profile(request)
     except EmailAlreadyRegisteredError:
@@ -92,4 +108,9 @@ async def update_profile(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    return UserResponse(full_name=result.full_name, email=result.email, token=result.token)
+    return ProfileResponse(full_name=result.full_name, 
+    email=result.email, 
+    phone_number=result.phone_number, 
+    country=result.country, 
+    gender=result.gender,
+    )

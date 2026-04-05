@@ -18,16 +18,22 @@ class UserRepository():
             id=model.id,
             full_name=model.full_name,
             email=model.email,
+            phone_number=model.phone_number,
+            country=model.country,
+            gender=model.gender,
             password=model.password,
             created_at=model.created_at,
         )
 
-    async def create_user(self, full_name: str, email: str, password_hash: str) -> User:
+    async def create_user(self, full_name: str, email: str, password_hash: str, phone_number: str, country: str, gender: str) -> User:
         email_normalized = email.strip().lower()
         model = UserModel(
             full_name=full_name,
             email=email_normalized,
             password=password_hash,
+            phone_number=phone_number,
+            country=country,
+            gender=gender,
         )
         self._db.add(model)
         await self._db.commit()

@@ -10,5 +10,8 @@ class User:
     id: int
     full_name: str
     email: str
+    phone_number: str
+    country: str
+    gender: str
     password: str
     created_at: datetime

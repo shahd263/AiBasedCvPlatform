@@ -9,8 +9,6 @@ class UserResponse(BaseModel):
     email: EmailStr
     token: str
 
-    class Config:
-        from_attributes = True
 
 
 class RegisterRequest(BaseModel):
@@ -19,6 +17,9 @@ class RegisterRequest(BaseModel):
     full_name: str
     email: EmailStr
     password: str
+    phone_number: str
+    country: str
+    gender: str
 
 
 class LoginRequest(BaseModel):
@@ -28,16 +29,22 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class LogoutResponse(BaseModel):
-    """Response for POST /auth/logout."""
-
-    success: bool
-    message: str
-
 
 class UpdateProfileRequest(BaseModel):
     """Request body for PATCH /api/auth/me (all fields optional)."""
 
     full_name: str | None = None
     email: EmailStr | None = None
+    phone_number: str | None = None
+    country: str | None = None
+    gender: str | None = None
     password: str | None = None
+
+
+class ProfileResponse(BaseModel):
+    """Response schema for auth endpoints: full_name, email, phone_number, country, gender."""
+    full_name: str
+    email: EmailStr
+    phone_number: str
+    country: str | None = None
+    gender: str | None = None
