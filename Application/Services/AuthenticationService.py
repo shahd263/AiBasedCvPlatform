@@ -18,7 +18,7 @@ class AuthenticationService:
     def __init__(self, user_repository: UserRepository) -> None:
         self._user_repository = user_repository
 
-    async def register(self, full_name: str, email: str, password: str, phone_number: str, country: str, gender: str, role: str) -> AuthResult:
+    async def register(self, full_name: str, email: str, password: str, phone_number: str, country: str, gender: str) -> AuthResult:
         """Register a new user: hash password, save, return JWT."""
         if await self._email_exists(email):
             raise EmailAlreadyRegisteredError(f"Email already registered: {email}")
@@ -29,7 +29,6 @@ class AuthenticationService:
             phone_number=phone_number,
             country=country,    
             gender=gender,
-            role=role,
         )
         token = create_access_token(user_id=user.id, email=user.email)
         return AuthResult(id=user.id, full_name=user.full_name, email=user.email, token=token)
@@ -70,8 +69,6 @@ class AuthenticationService:
             phone_number=user.phone_number,
             country=user.country,
             gender=user.gender,
-            role=user.role,
-            status=user.status,
         )
 
     async def update_profile(self, request: UpdateUserDTO) -> ProfileDTO | None:
@@ -99,8 +96,6 @@ class AuthenticationService:
             phone_number=user.phone_number,
             country=user.country,
             gender=user.gender,
-            role=user.role,
-            status=user.status,
         )
 
     async def _email_exists(self, email: str) -> bool:

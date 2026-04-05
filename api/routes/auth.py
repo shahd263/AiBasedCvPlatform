@@ -33,8 +33,8 @@ async def register(
         result = await auth_service.register(
             full_name=body.full_name, email=body.email, 
             password=body.password, phone_number=body.phone_number, 
-            country=body.country, gender=body.gender,
-            role=body.role,
+            country=body.country,
+            gender=body.gender,
         )
     except EmailAlreadyRegisteredError:
         raise HTTPException(
@@ -77,8 +77,6 @@ async def me(
         phone_number=user.phone_number,
         country=user.country,
         gender=user.gender,
-        role=user.role,
-        status=user.status,
     )
     
 
@@ -117,6 +115,4 @@ async def update_profile(
         phone_number=result.phone_number,
         country=result.country,
         gender=result.gender,
-        role=result.role,
-        status=result.status,
     )
