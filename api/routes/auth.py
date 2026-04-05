@@ -76,8 +76,9 @@ async def me(
         email=user.email,
         phone_number=user.phone_number,
         country=user.country,
-        gender=user.gender,  
+        gender=user.gender,
         role=user.role,
+        status=user.status,
     )
     
 
@@ -110,9 +111,12 @@ async def update_profile(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    return ProfileResponse(full_name=result.full_name, 
-    email=result.email, 
-    phone_number=result.phone_number, 
-    country=result.country, 
-    gender=result.gender,
+    return ProfileResponse(
+        full_name=result.full_name,
+        email=result.email,
+        phone_number=result.phone_number,
+        country=result.country,
+        gender=result.gender,
+        role=result.role,
+        status=result.status,
     )

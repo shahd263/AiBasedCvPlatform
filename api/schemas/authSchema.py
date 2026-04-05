@@ -50,3 +50,4 @@ class ProfileResponse(BaseModel):
     country: str | None = None
     gender: str | None = None
     role: str | None = None
+    status: str

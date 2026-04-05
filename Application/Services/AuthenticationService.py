@@ -64,7 +64,15 @@ class AuthenticationService:
         user = await self._user_repository.get_by_id(user_id)
         if not user:
             return None
-        return ProfileDTO(full_name=user.full_name, email=user.email, phone_number=user.phone_number, country=user.country, gender=user.gender, role=user.role)
+        return ProfileDTO(
+            full_name=user.full_name,
+            email=user.email,
+            phone_number=user.phone_number,
+            country=user.country,
+            gender=user.gender,
+            role=user.role,
+            status=user.status,
+        )
 
     async def update_profile(self, request: UpdateUserDTO) -> ProfileDTO | None:
         """Update current user profile. Returns new AuthResult or None."""
@@ -85,9 +93,15 @@ class AuthenticationService:
         user = await self._user_repository.update_user(request)
         if not user:
             return None
-        return ProfileDTO(full_name=user.full_name, 
-        email=user.email, phone_number=user.phone_number, 
-        country=user.country, gender=user.gender)
+        return ProfileDTO(
+            full_name=user.full_name,
+            email=user.email,
+            phone_number=user.phone_number,
+            country=user.country,
+            gender=user.gender,
+            role=user.role,
+            status=user.status,
+        )
 
     async def _email_exists(self, email: str) -> bool:
         email_normalized = email.strip().lower()

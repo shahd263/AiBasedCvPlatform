@@ -9,4 +9,5 @@ class ProfileDTO:
     phone_number: str
     country: str
     gender: str
-    role: str
+    role: str | None = None
+    status: str = "active"

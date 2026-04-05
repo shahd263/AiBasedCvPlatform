@@ -24,9 +24,20 @@ class UserRepository():
             password=model.password,
             created_at=model.created_at,
             role=model.role,
+            status=model.status,
         )
 
-    async def create_user(self, full_name: str, email: str, password_hash: str, phone_number: str, country: str, gender: str, role: str) -> User:
+    async def create_user(
+        self,
+        full_name: str,
+        email: str,
+        password_hash: str,
+        phone_number: str,
+        country: str,
+        gender: str,
+        role: str,
+        status: str = "active",
+    ) -> User:
         email_normalized = email.strip().lower()
         model = UserModel(
             full_name=full_name,
@@ -36,6 +47,7 @@ class UserRepository():
             country=country,
             gender=gender,
             role=role,
+            status=status,
         )
         self._db.add(model)
         await self._db.commit()

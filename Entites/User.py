@@ -16,3 +16,4 @@ class User:
     password: str
     created_at: datetime
     role: str | None = None
+    status: str = "active"
