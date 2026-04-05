@@ -34,6 +34,7 @@ async def register(
             full_name=body.full_name, email=body.email, 
             password=body.password, phone_number=body.phone_number, 
             country=body.country, gender=body.gender,
+            role=body.role,
         )
     except EmailAlreadyRegisteredError:
         raise HTTPException(
@@ -75,7 +76,8 @@ async def me(
         email=user.email,
         phone_number=user.phone_number,
         country=user.country,
-        gender=user.gender,   
+        gender=user.gender,  
+        role=user.role,
     )
     
 

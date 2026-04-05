@@ -20,6 +20,7 @@ class RegisterRequest(BaseModel):
     phone_number: str
     country: str
     gender: str
+    role: str
 
 
 class LoginRequest(BaseModel):
@@ -48,3 +49,4 @@ class ProfileResponse(BaseModel):
     phone_number: str
     country: str | None = None
     gender: str | None = None
+    role: str | None = None

@@ -9,3 +9,4 @@ class ProfileDTO:
     phone_number: str
     country: str
     gender: str
+    role: str
