@@ -85,7 +85,7 @@ class ResumeService:
             """
             save_path = await self._file_storage_service.save_file(file_content, filename)
             try:
-                extracted_text = await self._file_parser_service.extract_text(save_path, save_path.suffix)
+                extracted_text = await self._file_parser_service.extract_text(file_content, filename)
             except CVTextExtractionError:
                 await self._file_storage_service.delete_file(save_path)
                 raise

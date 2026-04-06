@@ -19,6 +19,7 @@ from Infrastructure.Repositories.template_repository import TemplateRepository
 from Infrastructure.Repositories.user_repository import UserRepository
 from Application.Usecases.coverLetterUsecase import CoverLetterUsecase
 from Application.Usecases.preview_Usecase import GeneratePreviewUsecase
+from Application.Usecases.cvTextParserUsecase import CvTextParserUsecase
 
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -111,3 +112,10 @@ def get_preview_usecase(
     resume_service: Annotated[ResumeService, Depends(get_resume_service)],
 ) -> GeneratePreviewUsecase:
     return GeneratePreviewUsecase(ai_service, template_service, resume_service)
+
+def get_cv_text_parser_usecase(
+    ai_service: Annotated[AiService, Depends(get_ai_service)],
+    resume_service: Annotated[ResumeService, Depends(get_resume_service)],
+    file_parser_service: Annotated[FileParserService, Depends(get_file_parser_service)],
+) -> CvTextParserUsecase:
+    return CvTextParserUsecase(ai_service, resume_service, file_parser_service)

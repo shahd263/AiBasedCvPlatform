@@ -9,6 +9,7 @@ import re
 from typing import Any
 from Infrastructure.Ai.Gemini_Client import GeminiClient
 from Infrastructure.Ai.Prompts.CoverLetterPrompt import COVER_LETTER_PROMPT
+from Infrastructure.Ai.Prompts.CvParserPrompt import CV_PARSER_PROMPT
 from Infrastructure.Ai.Prompts.GenerateResumePrompt import CV_GENERATOR_PROMPT
 from Utils.enhance_ai_output import enhance_ai_output
 
@@ -29,6 +30,8 @@ class AiService:
             if parts and hasattr(parts[0], "text"):
                 return parts[0].text
         return ""
+
+
 
     async def generate_cv(self, candidate_data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -53,4 +56,13 @@ class AiService:
         raw_text = await self._extract_response_text(response)
         return await enhance_ai_output(raw_text)
 
-        
+
+    async def parse_cv(self, cv_text: str) -> dict[str, Any]:
+        prompt = CV_PARSER_PROMPT.replace("{cv_text}", cv_text)
+        response = await self._client.generate_text(
+            prompt=prompt,
+        )
+        raw_text = await self._extract_response_text(response)
+        return await enhance_ai_output(raw_text)
+
+    
