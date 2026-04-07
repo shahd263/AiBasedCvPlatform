@@ -8,6 +8,7 @@ class TemplateSchema(BaseModel):
     id: int
     template_path: str
     picture_path: str | None
+    description: str | None
 
     model_config = ConfigDict(from_attributes=True)
 

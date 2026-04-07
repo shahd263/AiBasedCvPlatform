@@ -19,6 +19,7 @@ def _template_entity_to_schema(template) -> TemplateSchema:
         id=template.id,
         template_path=template.template_path,
         picture_path=template.picture_path,
+        description=template.description,
     )
 
 

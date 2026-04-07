@@ -9,3 +9,4 @@ class Template:
     id: int
     template_path: str
     picture_path: str | None
+    description: str | None

@@ -38,7 +38,7 @@ class AiService:
         Generate ATS-optimized CV JSON from candidate data using GenAI.
         """
         data_str = json.dumps(candidate_data, ensure_ascii=False, indent=2)
-        prompt = CV_GENERATOR_PROMPT.format(data=data_str)
+        prompt = CV_GENERATOR_PROMPT.replace("{data}", data_str)
 
         response = await self._client.generate_text(prompt)
 

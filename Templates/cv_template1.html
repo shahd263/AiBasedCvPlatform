@@ -175,6 +175,17 @@
         {% endfor %}
         {% endif %}
 
+        {% if response.skills %}
+        <div class="skills-section">
+            <h2>Skills</h2>
+            <ul>
+            {% for skill, items in response.skills.items() %}
+                <li><strong>{% if skill %}{{ skill }}:{% endif %}</strong> {% if items %}{{ items | join(', ') }}{% endif %}{% if not loop.last %}  {% endif %}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
         {% if response.education %}
         <h2>Education</h2>
         {% for edu in response.education %}
@@ -188,27 +199,6 @@
         </div>
         {% endfor %}
         {% endif %}
-
-        {% if response.skills %}
-        <div class="skills-section">
-            <h2>Skills</h2>
-            <ul>
-            {% for skill, items in response.skills.items() %}
-                <li><strong>{% if skill %}{{ skill }}:{% endif %}</strong> {% if items %}{{ items | join(', ') }}{% endif %}{% if not loop.last %}  {% endif %}</li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if response.certifications %}
-    <div class="certifications-section">
-    <h2>Certifications</h2>
-    <ul>
-    {% for cert in response.certifications %}
-        <li>{% if cert.name %}{{ cert.name }}{% endif %} ({% if cert.issuer %}{{ cert.issuer }}{% endif %}{% if cert.year %}, {% if cert.year %}{{ cert.year }}{% endif %}{% endif %}){% if not loop.last %}  {% endif %}</li>
-    {% endfor %}
-    </ul>
-    </div>
-    {% endif %}
     
     {% if response.languages %}
     <div class="languages-section">
@@ -216,6 +206,17 @@
     <ul>
     {% for lang in response.languages %}
         <li><strong>{% if lang.language %}{{ lang.language }}:{% endif %}</strong> {% if lang.proficiency %}{{ lang.proficiency }}{% endif %}{% if not loop.last %}  {% endif %}</li>
+    {% endfor %}
+    </ul>
+    </div>
+    {% endif %}
+
+    {% if response.certifications %}
+    <div class="certifications-section">
+    <h2>Certifications</h2>
+    <ul>
+    {% for cert in response.certifications %}
+        <li>{% if cert.name %}{{ cert.name }}{% endif %} ({% if cert.issuer %}{{ cert.issuer }}{% endif %}{% if cert.year %}, {% if cert.year %}{{ cert.year }}{% endif %}{% endif %}){% if not loop.last %}  {% endif %}</li>
     {% endfor %}
     </ul>
     </div>

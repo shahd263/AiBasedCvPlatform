@@ -17,6 +17,7 @@ class TemplateRepository():
             id=model.id,
             template_path=model.template_path,
             picture_path=model.picture_path,
+            description=model.description,
         )
 
     async def get_by_id(self, template_id: int) -> Template | None:

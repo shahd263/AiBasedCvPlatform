@@ -23,11 +23,10 @@ PROCESS
 8. Prefer industry-standard skill groupings used in professional CVs.
 
 1. HEADER
-Include:
 - Full Name
 - Job Title
 - Phone
-- Professional Email
+- Email
 - Location (City, Country)
 - Urls [LinkedIn, GitHub, Portfolio, etc.] (optional)
 
@@ -72,9 +71,6 @@ Optional:
 
 5. SKILLS
 
-Create two subsections:
-5. SKILLS
-
 - Include user provided skills
 - Add missing relevant skills inferred from projects/experience/job title
 - Include user soft skills
@@ -83,12 +79,16 @@ Create two subsections:
 Group skills into logical categories based on the input data.
 Create category names dynamically (do not use fixed sections).
 
-Example:
-Programming Languages: C#, Python, SQL
-Frameworks & Libraries: .NET Core, ASP.NET MVC
-Databases: SQL Server, MySQL
-Tools: Git, Postman
-Soft Skills: Teamwork, Communication
+CRITICAL — SKILLS JSON SHAPE:
+- "skills" MUST be a single JSON OBJECT (dictionary): each key is a category name (string), each value is a JSON ARRAY of skill strings.
+- Do NOT output "skills" as an array. Do NOT use objects like {{"category": "...", "items": [...]}} or [{{"Programming Languages": [...]}}].
+- Valid example:
+  "skills": {{
+    "Programming Languages": ["C#", "Python", "SQL"],
+    "Frameworks & Libraries": [".NET Core", "ASP.NET MVC"],
+    "Tools": ["Git", "Postman"],
+    "Soft Skills": ["Teamwork", "Communication"]
+  }}
 
 6. PROJECTS (if provided)
 For each project include:
@@ -117,8 +117,68 @@ WRITING RULES
 - Prioritize measurable achievements
 
 OUTPUT FORMAT
-Return the final CV as a well-structured JSON object following the sections and rules described above.
+Return the final CV strictly as a JSON object using the following structure.
+Field names and nesting MUST match exactly. "skills" MUST be an object (map), never a list.
 
+{{
+  "header": {{
+    "fullName": "",
+    "jobTitle": "",
+    "phone": "",
+    "email": "",
+    "location": "",
+    "urls": []
+  }},
+  "professionalSummary": "",
+  "experience": [
+    {{
+      "jobTitle": "",
+      "company": "",
+      "location": "",
+      "dates": "",
+      "responsibilities": []
+    }}
+  ],
+  "education": [
+    {{
+      "degree": "",
+      "major": "",
+      "university": "",
+      "graduationYear": 0,
+      "gpa": ""
+    }}
+  ],
+  "skills": {{
+    "Category Name One": ["skill1", "skill2"],
+    "Category Name Two": ["skill3"]
+  }},
+  "projects": [
+    {{
+      "name": "",
+      "description": "",
+      "technologies": []
+    }}
+  ],
+  "certifications": [
+    {{
+      "name": "",
+      "issuer": "",
+      "year": 0
+    }}
+  ],
+  "languages": [
+    {{
+      "language": "",
+      "proficiency": ""
+    }}
+  ]
+}}
+
+Rules:
+- "skills" is a JSON object only. Never wrap categories in an array.
+- Use "dates" for employment date range (one string), not separate start/end fields.
+- Do not add extra fields beyond those shown (omit keys you cannot fill, or use null/empty as appropriate).
+Do not return text outside JSON.
 INPUT JSON
 {data}
 

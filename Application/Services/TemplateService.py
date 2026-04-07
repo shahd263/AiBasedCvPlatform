@@ -5,7 +5,7 @@ from pathlib import Path
 from Infrastructure.Repositories.template_repository import TemplateRepository
 from Entites.Template import Template
 
-TEMPLATES_DIR = Path(__file__).parent.parent.parent / "Templates" / "Cvs"
+TEMPLATES_DIR = Path(__file__).parent.parent.parent / "Templates" 
 
 
 class TemplateNotFoundError(Exception):
