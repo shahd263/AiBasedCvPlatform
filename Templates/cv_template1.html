@@ -4,106 +4,227 @@
     <meta charset="UTF-8">
     <title>{{ response.header.fullName }} - {{ response.header.jobTitle }}</title>
     <style>
-        /* Page Setup for A4 */
+        /* Page Setup — tighter margins on all sides */
         @page {
             size: A4;
-            margin: 2cm;
+            margin: 0.4in;
         }
 
         body { 
-            font-family: "Calibri", "Helvetica", Arial, sans-serif; 
+            font-family: "Times New Roman", Times, "Liberation Serif", serif;
             margin: 0; 
             padding: 0;
-            color: #222;
-            line-height: 1.5; /* Increased for readability */
+            color: #000;
+            line-height: 1.1;
             background-color: #fff;
+            font-size: 10pt;
         }
 
-        /* Container for Screen Preview - doesn't affect print */
+        /* Container mirrors @page margins on screen */
         .page-container {
             width: 210mm;
             min-height: 297mm;
-            margin: 20px auto;
-            padding: 2cm;
+            margin: 6px auto;
+            padding: 0.4in;
             box-sizing: border-box;
         }
 
-        /* Header Styling (Exactly like photo) */
-        header { text-align: center; margin-bottom: 25px; }
+        /* Header: name & title left, contact lines stacked right */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.25em;
+            margin-bottom: 4px;
+        }
+
+        .header-left {
+            text-align: left;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .header-right {
+            text-align: right;
+            flex: 0 0 auto;
+            max-width: 48%;
+        }
+
+        .contact-line {
+            font-size: 9.5pt;
+            color: #000;
+            line-height: 1.25;
+            margin: 0 0 2px 0;
+        }
+
+        .contact-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-line a {
+            color: inherit;
+            text-decoration: none;
+        }
         
         h1 { 
-            font-size: 28px; /* Bigger name */
+            font-size: 40px;
             margin: 0; 
             font-weight: bold; 
-            letter-spacing: -0.5px;
+            letter-spacing: 0;
+            line-height: 1.1;
+            text-align: left;
         }
         
         .subtitle { 
-            font-size: 18px; 
-            margin: 4px 0 10px 0; 
+            font-size: 15pt; 
+            margin: 2px 0 0 0; 
             font-weight: bold; 
-            color: #333;
-        }
-        
-        .contact-info { 
-            font-size: 11pt; 
-            color: #444; 
+            color: #000;
+            line-height: 1.1;
+            text-align: left;
         }
 
-        /* Section Headers with bold underline */
+        /* Section titles: bold italic + rule to right margin */
         h2 { 
-            font-size: 18px; 
+            display: flex;
+            align-items: center;
+            font-size: 12.5pt; 
             text-transform: capitalize; 
-            border-bottom: 2px solid #222; 
-            margin: 25px 0 12px 0; 
-            padding-bottom: 3px;
+            margin: 5px 0 5px 0; 
+            padding: 0;
+            line-height: 1.1;
             font-weight: bold;
+            font-style: italic;
+            border: none;
         }
 
-        /* Job/Project Title & Date Alignment */
+        h2::after {
+            content: '';
+            flex: 1 1 auto;
+            border-bottom: 1px solid #000;
+            margin-left: 0.35em;
+            margin-bottom: 5px;
+            min-width: 0.5em;
+        }
+
+        /* First section on page: tight gap after header / summary */
+        .page-container > h2:first-of-type,
+        .summary + h2 {
+            margin-top: 4px;
+        }
+
+        /* Top row: job/project name (bold black) | dates (italic, right) */
         .entry-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: baseline;
-            font-weight: bold; 
-            font-size: 13px; /* Slightly bigger titles */
+            gap: 0.75em;
+            font-size: 10pt;
+            line-height: 1.1;
+            margin: 0;
+            padding: 0;
         }
 
-        .entry-subheader { 
-            font-style: italic; 
-            font-size: 12px; 
-            margin-bottom: 6px;
+        .entry-job-title {
+            font-weight: bold;
+            font-style: normal;
+            color: #000;
+            min-width: 0;
+        }
+
+        .entry-header .entry-dates {
+            font-style: italic;
+            font-weight: normal;
+            color: #000;
+            flex-shrink: 0;
+            text-align: right;
+        }
+
+        /* Company & location — line under title: italic, dark grey, tight to title */
+        .entry-subheader {
+            font-style: italic;
+            font-weight: normal;
+            font-size: 10pt;
+            line-height: 1.1;
             color: #444;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Body Text */
+        .entry {
+            margin-bottom: 2px;
+        }
+
+        .project-url {
+            margin: 0 0 1px 0;
+            line-height: 1.1;
+        }
+
+        .project-url a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Body text — minimal vertical gaps */
         p, li { 
-            font-size: 11pt; /* Professional standard size */
-            margin: 0 0 8px 0; 
+            font-size: 10pt;
+            margin: 0 0 1px 0; 
+            line-height: 1.1;
         }
 
-        ul { margin: 8px 0 18px 25px; padding: 0; }
-        li { margin-bottom: 5px; padding-left: 5px; }
+        ul { 
+            margin: 1px 0 4px 1.1em; 
+            padding: 0; 
+            list-style-type: disc;
+        }
+        li { 
+            margin-bottom: 0; 
+            padding-left: 2px; 
+        }
         
-        .summary p {
-            font-size: 11pt;
-            text-align: justify;
+        .summary {
+            margin-bottom: 0;
         }
 
-        /* Skills formatting */
+        .summary p {
+            font-size: 10pt;
+            text-align: justify;
+            margin-bottom: 0;
+            line-height: 1.1;
+        }
+
         .skills-section p {
-            line-height: 1.8;
+            line-height: 1.1;
+        }
+
+        .skills-section ul,
+        .certifications-section ul {
+            margin-bottom: 3px;
+        }
+
+        /* Languages: one row (wraps), spaced apart — no bullets */
+        .languages-section ul {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.35em 1.25em;
+            list-style: none;
+            margin: 0 0 3px 0;
+            padding: 0;
+            font-size: 10pt;
+        }
+
+        .languages-section ul li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
         .certifications-section li {
-            font-size: 11pt;
+            font-size: 10pt;
             text-align: justify;
         }
         .certifications-section ul {
-            font-size: 11pt;
-            text-align: justify;
-        }
-        .languages-section ul {
-            font-size: 11pt;
+            font-size: 10pt;
             text-align: justify;
         }
         /* Printing adjustments */
@@ -121,21 +242,32 @@
 
     <div class="page-container">
         <header>
+            <div class="header-left">
                 <h1>{% if response.header.fullName %}{{ response.header.fullName }}{% endif %}</h1>
-            <p class="subtitle">{% if response.header.jobTitle %}{{ response.header.jobTitle }}{% endif %}</p>
-            <div class="contact-info">
-                {% if response.header.email %}{{ response.header.email }}{% endif %} 
+                {% if response.header.jobTitle %}<p class="subtitle">{{ response.header.jobTitle }}</p>{% endif %}
+            </div>
+            {% if response.header.email or response.header.urls or response.header.location or response.header.phone %}
+            <div class="header-right">
+                {% if response.header.email %}
+                <div class="contact-line">{{ response.header.email }}</div>
+                {% endif %}
                 {% if response.header.urls %}
                     {% for url in response.header.urls %}
-                        | <a href="{{ url }}" style="text-decoration:none; color:inherit;">{{ url | replace('https://','') | replace('http://','') }}</a>
+                <div class="contact-line"><a href="{{ url }}">{{ url | replace('https://','') | replace('http://','') }}</a></div>
                     {% endfor %}
                 {% endif %}
-                <br>
-                {% if response.header.location %}{{ response.header.location }}{% endif %} | {% if response.header.phone %}{{ response.header.phone }}{% endif %}
+                {% if response.header.location %}
+                <div class="contact-line">{{ response.header.location }}</div>
+                {% endif %}
+                {% if response.header.phone %}
+                <div class="contact-line">{{ response.header.phone }}</div>
+                {% endif %}
             </div>
+            {% endif %}
         </header>
 
         {% if response.professionalSummary %}
+        <h2>Professional Summary</h2>
         <div class="summary">
             <p>{% if response.professionalSummary %}{{ response.professionalSummary }}{% endif %}</p>
         </div>
@@ -146,8 +278,8 @@
         {% for exp in response.experience %}
         <div class="entry">
             <div class="entry-header">
-                <span>{% if exp.jobTitle %}{{ exp.jobTitle }}{% endif %}</span>
-                <span>{{ exp.dates }}</span>
+                <span class="entry-job-title">{% if exp.jobTitle %}{{ exp.jobTitle }}{% endif %}</span>
+                <span class="entry-dates">{{ exp.dates }}</span>
             </div>
             <div class="entry-subheader">
                 {% if exp.company %}{{ exp.company }}{% endif %}{% if exp.location %}, {{ exp.location }}{% endif %}
@@ -166,11 +298,11 @@
         {% for project in response.projects %}
         <div class="entry">
             <div class="entry-header">
-                <span>{% if project.name %}{{ project.name }}{% endif %}</span>
-                <span>{% if project.dates %}{{ project.dates }}{% endif %}</span>
+                <span class="entry-job-title"> {% if project.url %}<a href="{{ project.url }}">{% endif %}{% if project.name %}{{ project.name }}{% endif %}{% if project.url %}</a>{% endif %}: </span> 
+                <span class="entry-dates">{% if project.dates %}{{ project.dates }}{% endif %}</span>
             </div>
             <p>{% if project.description %}{{ project.description }}{% endif %}</p>
-            <p><strong>Technologies:</strong> {{ project.technologies | join(', ') }}</p>
+            {% if project.technologies %}<p><strong>Technologies:</strong> {{ project.technologies | join(', ') }}</p>{% endif %}
         </div>
         {% endfor %}
         {% endif %}
@@ -191,11 +323,13 @@
         {% for edu in response.education %}
         <div class="entry">
             <div class="entry-header">
-                <h3>{% if edu.university %}{{ edu.university }}{% endif %}</h3>
-                <span>{% if edu.graduationYear %}{{ edu.graduationYear }}{% endif %}</span>
+                <span class="entry-job-title">{% if edu.university %}{{ edu.university }}{% endif %}</span>
+                <span class="entry-dates">{% if edu.graduationYear %}{{ edu.graduationYear }}{% endif %}</span>
             </div>
-            <p>{% if edu.degree %}{{ edu.degree }}{% endif %}{% if edu.major %}: {% if edu.major %}{{ edu.major }}{% endif %}{% endif %}</p>
-            <p><strong>GPA:</strong> {% if edu.gpa %}{{ edu.gpa }}{% endif %}</p>
+            {% if edu.degree or edu.major %}
+            <div class="entry-subheader">{% if edu.degree %}{{ edu.degree }}{% endif %}{% if edu.major %}{% if edu.degree %}: {% endif %}{{ edu.major }}{% endif %}</div>
+            {% endif %}
+            {% if edu.gpa %}<p><strong>GPA:</strong> {{ edu.gpa }}</p>{% endif %}
         </div>
         {% endfor %}
         {% endif %}
@@ -205,7 +339,7 @@
     <h2>Languages</h2>
     <ul>
     {% for lang in response.languages %}
-        <li><strong>{% if lang.language %}{{ lang.language }}:{% endif %}</strong> {% if lang.proficiency %}{{ lang.proficiency }}{% endif %}{% if not loop.last %}  {% endif %}</li>
+        <li><strong>{% if lang.language %}{{ lang.language }}:{% endif %}</strong> {% if lang.proficiency %}{{ lang.proficiency }}{% endif %}</li>
     {% endfor %}
     </ul>
     </div>
@@ -216,15 +350,12 @@
     <h2>Certifications</h2>
     <ul>
     {% for cert in response.certifications %}
-        <li>{% if cert.name %}{{ cert.name }}{% endif %} ({% if cert.issuer %}{{ cert.issuer }}{% endif %}{% if cert.year %}, {% if cert.year %}{{ cert.year }}{% endif %}{% endif %}){% if not loop.last %}  {% endif %}</li>
+        <li>{% if cert.name %}<strong>{{ cert.name }}</strong>{% endif %}{% if cert.issuer or cert.year %} ({% if cert.issuer %}{{ cert.issuer }}{% endif %}{% if cert.year %}{% if cert.issuer %}, {% endif %}{{ cert.year }}{% endif %}){% endif %}{% if not loop.last %}  {% endif %}</li>
     {% endfor %}
     </ul>
     </div>
     {% endif %}
     
+    </div>
 </body>
 </html>
-    </div>
-
-    
-    

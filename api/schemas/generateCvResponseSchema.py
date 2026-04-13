@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import List, Optional, Dict
 
 
@@ -31,6 +31,8 @@ class ProjectSchema(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     technologies: Optional[List[str]] = None
+    dates: Optional[str] = None  # single string for project timeline (e.g. "Jan 2023 – Dec 2024")
+    url: Optional[str] = None  # repo, demo, or project page
 
 
 class CertificationSchema(BaseModel):

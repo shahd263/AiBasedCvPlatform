@@ -59,7 +59,10 @@ SCHEMA:
     {
       "name": string | null,
       "description": string | null,
-      "technologies": string[] | null
+      "technologies": string[] | null,
+      "startDate": string | null,
+      "endDate": string | null,
+      "url": string | null
     }
   ],
   "certifications": [
@@ -86,7 +89,7 @@ EXTRACTION RULES:
 - experience → extract ALL roles in reverse chronological order
 - responsibilities → bullet points or inferred tasks
 - education → include all degrees
-- projects → include personal + professional projects
+- projects → include personal + professional projects; extract startDate and endDate when a timeline is visible; extract url when a repo, demo, or project link is present
 - certifications → include all relevant certifications
 - languages → extract spoken languages with proficiency if available
 

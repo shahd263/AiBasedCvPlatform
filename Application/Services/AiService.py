@@ -12,6 +12,7 @@ from Infrastructure.Ai.Prompts.CoverLetterPrompt import COVER_LETTER_PROMPT
 from Infrastructure.Ai.Prompts.CvParserPrompt import CV_PARSER_PROMPT
 from Infrastructure.Ai.Prompts.GenerateResumePrompt import CV_GENERATOR_PROMPT
 from Utils.enhance_ai_output import enhance_ai_output
+from playwright.sync_api import sync_playwright
 
 
 class AiService:
@@ -65,4 +66,8 @@ class AiService:
         raw_text = await self._extract_response_text(response)
         return await enhance_ai_output(raw_text)
 
-    
+
+
+
+
+  

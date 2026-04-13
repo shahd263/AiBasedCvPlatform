@@ -93,6 +93,8 @@ CRITICAL — SKILLS JSON SHAPE:
 6. PROJECTS (if provided)
 For each project include:
 - Project Name
+- Dates (one string for the timeline, e.g. "Jan 2023 – Present" or "2022 – 2023"). Build this from the candidate's project startDate and endDate when present; if only one side is given, still produce a readable range.
+- URL (if the candidate provided a project url: copy or normalize to a full https URL when possible; otherwise omit or empty string)
 - 1–2 sentence description
 - Key technologies used
 
@@ -155,6 +157,8 @@ Field names and nesting MUST match exactly. "skills" MUST be an object (map), ne
   "projects": [
     {{
       "name": "",
+      "dates": "",
+      "url": "",
       "description": "",
       "technologies": []
     }}
@@ -176,7 +180,9 @@ Field names and nesting MUST match exactly. "skills" MUST be an object (map), ne
 
 Rules:
 - "skills" is a JSON object only. Never wrap categories in an array.
-- Use "dates" for employment date range (one string), not separate start/end fields.
+- Use "dates" for each employment entry (one string), not separate start/end fields in the output.
+- Use "dates" for each project (one string), synthesized from input startDate/endDate when provided.
+- Include "url" for each project when the input includes a project URL; otherwise omit or use empty string.
 - Do not add extra fields beyond those shown (omit keys you cannot fill, or use null/empty as appropriate).
 Do not return text outside JSON.
 INPUT JSON

@@ -30,6 +30,9 @@ class ProjectSchema(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     technologies: Optional[List[str]] = None
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+    url: Optional[str] = None  # repo, demo, or project page
 
 
 class CertificationSchema(BaseModel):
@@ -65,3 +68,6 @@ class CoverLetterRequest(BaseModel):
     cvId: int
     job_description: str
 
+class AutofillApplicationRequest(BaseModel):
+    candidate_data: CandidateDataSchema
+    job_url: str

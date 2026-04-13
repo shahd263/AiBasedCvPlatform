@@ -5,7 +5,7 @@ from Application.Services.FileParserService import CVTextExtractionError
 from Application.Services.ResumeService import ResumeNotFoundError
 from Application.Usecases.cvTextParserUsecase import CvTextParserUsecase
 from Core.dependencies import get_ai_service, get_cover_letter_usecase, get_cv_text_parser_usecase, get_preview_usecase
-from api.schemas.generateCvRrequestSchema import CandidateDataSchema, CvGenerateRequest, CoverLetterRequest
+from api.schemas.generateCvRrequestSchema import AutofillApplicationRequest, CandidateDataSchema, CvGenerateRequest, CoverLetterRequest
 from Application.Usecases.coverLetterUsecase import CoverLetterUsecase
 from Application.Usecases.preview_Usecase import GeneratePreviewUsecase
 from api.schemas.templateSchema import PreviewResponse
